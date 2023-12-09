@@ -13,6 +13,8 @@
   	- [2. SQL databáze](#2-sql-databáze)
     	- [2.1 Lidské zdroje](#21-lidské-zdroje)
         	- [2.1.1 Základní kontaktní informace o zaměstnacích](#211-základní-kontaktní-informace-o-zaměstnacích)
+        	- [2.1.2 Základní informace o pracovní pozici zaměstnanců, jejich zařezení do oddělení a zjištění manažerů oddělení](#212-základní-informace-o-pracovní-pozici-zaměstnanců-jejich-zařezení-do-oddělení-a-zjištění-manažerů-oddělení)
+        	- [2.1.3 Základní informace o datumu narození a datumu nástupu jednotlivých pracovníků](#213-základní-informace-o-datumu-narození-a-datumu-nástupu-jednotlivých-pracovníků)
 
 ## 1. Úvod
 ### 1.1 Popis
@@ -85,4 +87,49 @@ CREATE OR ALTER VIEW view_employee_job_basic_info AS (
 		ON dh.DepartmentID = d.DepartmentID
 	WHERE dh.EndDate IS NULL)
     ;
+```
+#### 2.1.3 Základní informace o datumu narození a datumu nástupu jednotlivých pracovníků
+Pro vytvoření výpisu základních informací o datumu narození, datumu nástupu do práce  bylo nutné propojit tabulky:
+- employee
+- Person
+  
+Dále byly do tabulky přidány sloupce vypisující velká výročí jak z pohledu narozenin, tak z pohledu nástupu do pracá. Tyto výročí jsou vypisovány pro aktuální a následující kalendářní rok. Jako poslední byl přidán sloupec, který vytváří upozornění 7 dní před velkým výročím narozenin nebo nástupu do práce.
+
+```
+CREATE OR ALTER VIEW view_employee_hire_birth_date AS (
+	SELECT
+    e.NationalIDNumber,
+    p.FirstName AS First_Name,
+    p.LastName AS Last_Name,
+    e.BirthDate AS Birth_date,
+    e.HireDate AS Hire_date,
+    CASE
+        WHEN YEAR(GETDATE()) - YEAR(e.HireDate) IN (10, 20, 30, 40, 50, 60, 70) THEN CONCAT(YEAR(GETDATE()) - YEAR(e.HireDate), ' Anniversary')
+        ELSE 'NO'
+    END AS Hire_Anniversary_actual_year,
+    CASE
+        WHEN YEAR(GETDATE()) - YEAR(e.BirthDate) IN (10, 20, 30, 40, 50, 60, 70) THEN CONCAT(YEAR(GETDATE()) - YEAR(e.BirthDate), ' Anniversary')
+        ELSE 'NO'
+    END AS Birth_Anniversary_actual_year,
+    CASE
+        WHEN YEAR(GETDATE()) - YEAR(e.BirthDate) IN (10, 20, 30, 40, 50, 60, 70) AND MONTH(GETDATE()) = MONTH(e.BirthDate) AND DATEDIFF(DAY, DAY(e.BirthDate),DAY(GETDATE()))  = -7 THEN 'Seven days into birth anniversary'
+        ELSE 'NO'
+    END AS Birth_anniversary_alert,
+	CASE
+        WHEN YEAR(GETDATE()) - YEAR(e.HireDate) IN (10, 20, 30, 40, 50, 60, 70) AND MONTH(GETDATE()) = MONTH(e.HireDate) AND DATEDIFF(DAY, DAY(e.HireDate),DAY(GETDATE()))  = -7 THEN 'Seven days into hire anniversary'
+        ELSE 'NO'
+    END AS Hire_anniversary_alert,
+	 CASE
+        WHEN YEAR(GETDATE())+1 - YEAR(e.HireDate) IN (10, 20, 30, 40, 50, 60, 70) THEN CONCAT(YEAR(GETDATE())+1 - YEAR(e.HireDate), ' Anniversary')
+        ELSE 'NO'
+    END AS Hire_Anniversary_next_year,
+    CASE
+        WHEN YEAR(GETDATE())+1 - YEAR(e.BirthDate) IN (10, 20, 30, 40, 50, 60, 70) THEN CONCAT(YEAR(GETDATE())+1 - YEAR(e.BirthDate), ' Anniversary')
+        ELSE 'NO'
+    END AS Birth_Anniversary_next_year
+	FROM [AdventureWorks2022].[HumanResources].[Employee] e 
+	LEFT JOIN [AdventureWorks2022].[Person].[Person] p
+	 ON e.BusinessEntityID = p.BusinessEntityID
+)
+;
 ```
