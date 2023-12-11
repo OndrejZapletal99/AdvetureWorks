@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28307.421
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pohledy", "Pohledy", "{79BFBD77-D82E-48FD-B4E0-70A6A7FFFF58}"
 	ProjectSection(SolutionItems) = preProject
+		view_employee_hire_birth_date.sql = view_employee_hire_birth_date.sql
+		view_employee_job_basic_info.sql = view_employee_job_basic_info.sql
 		view_person_contact_basic_info.sql = view_person_contact_basic_info.sql
 	EndProjectSection
 EndProject
@@ -13,7 +15,7 @@ Global
 		Default|Default = Default|Default
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0B6A019D-8208-4BE5-A28C-E007A0AA6C41}.Default|Default.ActiveCfg = Default
+		{3F3B0113-7761-4634-B0DF-7E20C7DD26ED}.Default|Default.ActiveCfg = Default
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

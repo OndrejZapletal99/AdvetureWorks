@@ -74,6 +74,7 @@ CREATE OR ALTER VIEW view_employee_job_basic_info AS (
 		emp.JobTitle AS Job_title,
 		d.Name AS Sub_department,
 		d.GroupName AS Department,
+		sh.Name,
 		CASE 
 			WHEN emp.JobTitle LIKE '%manager%' THEN 'Manager'
 			ELSE 'Subordinate'
@@ -85,8 +86,10 @@ CREATE OR ALTER VIEW view_employee_job_basic_info AS (
 		ON emp.BusinessEntityID = dh.BusinessEntityID
 	LEFT JOIN [AdventureWorks2022].[HumanResources].[Department] d
 		ON dh.DepartmentID = d.DepartmentID
+	LEFT JOIN  [AdventureWorks2022].[HumanResources].[Shift] sh
+		ON dh.ShiftID = sh.ShiftID
 	WHERE dh.EndDate IS NULL)
-    ;
+;
 ```
 #### 2.1.3 Základní informace o datumu narození a datumu nástupu jednotlivých pracovníků
 Pro vytvoření výpisu základních informací o datumu narození, datumu nástupu do práce  bylo nutné propojit tabulky:
@@ -131,5 +134,26 @@ CREATE OR ALTER VIEW view_employee_hire_birth_date AS (
 	LEFT JOIN [AdventureWorks2022].[Person].[Person] p
 	 ON e.BusinessEntityID = p.BusinessEntityID
 )
+;
+```
+#### 2.1.4 Základní informace o zbývajících hodinách dovolené, hodinách nemocnosti
+Následující script vytváří přehled o zaměstnancích a jejich hodinách dovolené, hodinách nemocnosti a také dovolené převedené na dny včetně rozdělení zaměstnanců na skipunu, jenž má více jak 5 dní dovonlené a na skupinu s méně jak 5 dny dovolené.
+```
+CREATE OR ALTER VIEW view_employee_hours_vacation_sick_info AS (
+	SELECT
+		p.FirstName AS First_Name,
+		p.MiddleName AS Middle_Name,
+		p.LastName AS Last_Name,
+		emp. VacationHours,
+		emp.SickLeaveHours,
+		CASE
+		WHEN (emp.VacationHours/7.5)>5 THEN 'More then 5 days Vacation'
+			ELSE 'OK'
+		END AS Vacation_transfer_next_year,
+		ROUND(CAST(emp.VacationHours AS decimal(18,1))/8,2) AS Vacation_days
+	FROM [AdventureWorks2022].[HumanResources].[Employee] emp
+	
+	LEFT JOIN [AdventureWorks2022].[Person].[Person] p
+		ON emp.BusinessEntityID = p.BusinessEntityID)
 ;
 ```
