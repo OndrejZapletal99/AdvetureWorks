@@ -15,7 +15,7 @@
         	- [2.1.1 Základní kontaktní informace o zaměstnacích](#211-základní-kontaktní-informace-o-zaměstnacích)
         	- [2.1.2 Základní informace o pracovní pozici zaměstnanců, jejich zařezení do oddělení a zjištění manažerů oddělení](#212-základní-informace-o-pracovní-pozici-zaměstnanců-jejich-zařezení-do-oddělení-a-zjištění-manažerů-oddělení)
         	- [2.1.3 Základní informace o datumu narození a datumu nástupu jednotlivých pracovníků](#213-základní-informace-o-datumu-narození-a-datumu-nástupu-jednotlivých-pracovníků)
-
+        	- [2.1.4 Základní informace o zbývajících hodinách dovolené, hodinách nemocnosti](#214-základní-informace-o-zbývajících-hodinách-dovolené-hodinách-nemocnosti)
 ## 1. Úvod
 ### 1.1 Popis
 Cílem tohoto projektu je zanalyzovat veřejně dostupnou databázi pomocí SQL v programu SQL Server Management Studio a také provést vizualizaci dat v programu PowerBi.
