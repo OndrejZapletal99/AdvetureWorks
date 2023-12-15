@@ -139,7 +139,37 @@ CREATE OR ALTER VIEW view_employee_hire_birth_date AS (
 ;
 ```
 #### 2.1.4 Základní informace o zbývajících hodinách dovolené, hodinách nemocnosti
-Následující script vytváří přehled o zaměstnancích a jejich hodinách dovolené, hodinách nemocnosti a také dovolené převedené na dny včetně rozdělení zaměstnanců na skipunu, jenž má více jak 5 dní dovonlené a na skupinu s méně jak 5 dny dovolené.
+Následující script vytváří přehled o zaměstnancích a jejich hodinách dovolené, hodinách nemocnosti a také dovolené převedené na dny včetně rozdělení zaměstnanců na skipunu, jenž má více jak 5 dní dovolené a na skupinu s méně jak 5 dny dovolené.
+```
+CREATE OR ALTER VIEW view_employee_hours_vacation_sick_info AS (
+	SELECT
+		p.FirstName AS First_Name,
+		p.MiddleName AS Middle_Name,
+		p.LastName AS Last_Name,
+		emp. VacationHours,
+		emp.SickLeaveHours,
+		CASE
+		WHEN (emp.VacationHours/7.5)>5 THEN 'More then 5 days Vacation'
+			ELSE 'OK'
+		END AS Vacation_transfer_next_year,
+		ROUND(CAST(emp.VacationHours AS decimal(18,1))/8,2) AS Vacation_days
+	FROM [AdventureWorks2022].[HumanResources].[Employee] emp
+	
+	LEFT JOIN [AdventureWorks2022].[Person].[Person] p
+		ON emp.BusinessEntityID = p.BusinessEntityID)
+;
+```
+### 2.2 Produkty a produkce
+#### 2.2.1 Produktové info a zařazení do hierarchie
+
+Pro vytvoření výpisu základního produktových  informací o jednotlivých produktech včetně jejich zařazení do hierarchie společnosti bylo nutné propojit tabulky:
+
+- Product
+- ProductSubcategory
+- ProductModel
+- ProductCategory
+- ProductDescription
+
 ```
 CREATE OR ALTER VIEW view_product_hierarchy_basic_info AS (
 	SELECT
