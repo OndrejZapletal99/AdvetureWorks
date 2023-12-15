@@ -24,6 +24,7 @@ CREATE OR ALTER VIEW view_product_hierarchy_basic_info AS (
 		YEAR(p.SellStartDate) AS Sell_Start_year,
 		YEAR(p.SellEndDate) AS Sell_End_year,
 		p.DiscontinuedDate AS Discontinued_Date,
+		d.Description AS Product_Description,
 		CASE	
 			WHEN p.SellEndDate IS NOT NULL THEN 'Not Sellable'
 			ELSE 'Sellable'
@@ -34,5 +35,7 @@ CREATE OR ALTER VIEW view_product_hierarchy_basic_info AS (
 	LEFT JOIN [AdventureWorks2022].[Production].[ProductModel] m
 		ON p.ProductModelID = m.ProductModelID
 	LEFT JOIN [AdventureWorks2022].[Production].[ProductCategory] c
-		ON s.ProductCategoryID = c.ProductCategoryID)
+		ON s.ProductCategoryID = c.ProductCategoryID
+	LEFT JOIN [AdventureWorks2022].[Production].[ProductDescription] d
+		ON p.ProductID = d.ProductDescriptionID)
 ;
