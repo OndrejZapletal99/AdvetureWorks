@@ -5,10 +5,14 @@ VisualStudioVersion = 15.0.28307.421
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pohledy", "Pohledy", "{79BFBD77-D82E-48FD-B4E0-70A6A7FFFF58}"
 	ProjectSection(SolutionItems) = preProject
+		Select_price_delta_1_year.sql = Select_price_delta_1_year.sql
+		Select_price_delta_2_years.sql = Select_price_delta_2_years.sql
 		view_employee_hire_birth_date.sql = view_employee_hire_birth_date.sql
 		view_employee_hours_vacation_sick_info.sql = view_employee_hours_vacation_sick_info.sql
 		view_employee_job_basic_info.sql = view_employee_job_basic_info.sql
 		view_person_contact_basic_info.sql = view_person_contact_basic_info.sql
+		view_product_hierarchy_basic_info.sql = view_product_hierarchy_basic_info.sql
+		view_product_price_history.sql = view_product_price_history.sql
 	EndProjectSection
 EndProject
 Global
@@ -16,7 +20,7 @@ Global
 		Default|Default = Default|Default
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{3E861F9D-3D7F-4809-B057-417F6CD1B126}.Default|Default.ActiveCfg = Default
+		{F36A1DF8-742B-416A-9B1F-A519EE212389}.Default|Default.ActiveCfg = Default
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

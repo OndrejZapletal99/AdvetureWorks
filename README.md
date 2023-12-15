@@ -17,7 +17,11 @@
         	- [2.1.3 Základní informace o datumu narození a datumu nástupu jednotlivých pracovníků](#213-základní-informace-o-datumu-narození-a-datumu-nástupu-jednotlivých-pracovníků)
         	- [2.1.4 Základní informace o zbývajících hodinách dovolené, hodinách nemocnosti](#214-základní-informace-o-zbývajících-hodinách-dovolené-hodinách-nemocnosti)
       	-  [2.2 Produkty a produkce](#22-produkty-a-produkce)
-         	-  [2.2.1 2.2.1 Produktová hierarchie](#221-produktové-info-a-zařazení-do-hierarchie)
+         	-  [2.2.1 Produktová hierarchie](#221-produktové-info-a-zařazení-do-hierarchie)
+         	-  [2.2.2 Cenová historie produktů](#222-cenová-historie-produktů)
+         	-  [2.2.3 Změna cen v čase](#223-změna-cen-v-čase)
+
+Cenová historie produktů
 ## 1. Úvod
 ### 1.1 Popis
 Cílem tohoto projektu je zanalyzovat veřejně dostupnou databázi pomocí SQL v programu SQL Server Management Studio a také provést vizualizaci dat v programu PowerBi.
@@ -211,5 +215,74 @@ CREATE OR ALTER VIEW view_product_hierarchy_basic_info AS (
 		ON s.ProductCategoryID = c.ProductCategoryID
 	LEFT JOIN [AdventureWorks2022].[Production].[ProductDescription] d
 		ON p.ProductID = d.ProductDescriptionID)
+;
+```
+#### 2.2.2 Cenová historie produktů
+Pro vytvoření výpisu základní cenové historie produktů bylo nutné propojit tabulky a pohledy:
+
+- ProductListPriceHistory
+- view_product_hierarchy_basic_info
+
+```
+CREATE OR ALTER VIEW view_product_price_history AS (
+	SELECT
+		pph.ProductID,
+		info.Product_Name,
+		pph.ListPrice,
+		YEAR(pph.StartDate) + 1 AS Fiscal_year,
+		info.Product_Category,
+		info.Product_Subcategory,
+		info.Product_Model
+	FROM [AdventureWorks2022].[Production].[ProductListPriceHistory] pph
+		LEFT JOIN [AdventureWorks2022].[dbo].[view_product_hierarchy_basic_info] info
+			ON pph.ProductID = info.Product_ID)
+;
+```
+#### 2.2.3 Změna cen v čase
+Z pohledu pohledu o cenové historii [2.2.2 Cenová historie produktů](#222-cenová-historie-produktů) byly vytvořeny dva seelct příkazy pro zjištění změny ceny meziročně a také změny ceny během dou let.
+Tyto příkazy lze jednoduše změnit v případě, že by někdo požadoval zjsitit změny pro produktové kategorie nebo subkategorie
+
+```
+WITH product_price_dev_1_year AS (
+	SELECT
+		Fiscal_year,
+		ProductID,
+		Product_Name,
+		ROUND(AVG(ListPrice),2) AS AVG_price,
+		ROUND(LAG((AVG(ListPrice)),1) OVER (PARTITION BY ProductID ORDER BY Fiscal_year),2) AS Previous_fiscal_year_1
+	FROM [AdventureWorks2022].[dbo].[view_product_price_history] 
+	GROUP BY Fiscal_year,ProductID,Product_Name
+)
+SELECT
+	Fiscal_year,
+	Product_Name,
+	ProductID,
+	ROUND((AVG_price-Previous_fiscal_year_1)/Previous_fiscal_year_1*100,2) as delta_1
+FROM product_price_dev_1_year 
+WHERE 1=1
+	AND Previous_fiscal_year_1 IS NOT NULL
+ORDER BY Fiscal_year DESC
+;
+```
+```
+WITH product_price_dev_2_year AS (
+	SELECT
+		Fiscal_year,
+		ProductID,
+		Product_Name,
+		ROUND(AVG(ListPrice),2) AS AVG_price,
+		ROUND(LAG((AVG(ListPrice)),2) OVER (PARTITION BY ProductID ORDER BY Fiscal_year),2) AS Previous_fiscal_year_2
+	FROM [AdventureWorks2022].[dbo].[view_product_price_history] 
+	GROUP BY Fiscal_year,ProductID,Product_Name
+)
+SELECT
+	Fiscal_year,
+	Product_Name,
+	ProductID,
+	ROUND((AVG_price-Previous_fiscal_year_2)/Previous_fiscal_year_2*100,2) as delta_1
+FROM product_price_dev_2_year 
+WHERE 1=1
+	AND Previous_fiscal_year_2 IS NOT NULL
+ORDER BY Fiscal_year DESC
 ;
 ```
