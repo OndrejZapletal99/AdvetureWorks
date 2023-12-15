@@ -16,6 +16,8 @@
         	- [2.1.2 Základní informace o pracovní pozici zaměstnanců, jejich zařezení do oddělení a zjištění manažerů oddělení](#212-základní-informace-o-pracovní-pozici-zaměstnanců-jejich-zařezení-do-oddělení-a-zjištění-manažerů-oddělení)
         	- [2.1.3 Základní informace o datumu narození a datumu nástupu jednotlivých pracovníků](#213-základní-informace-o-datumu-narození-a-datumu-nástupu-jednotlivých-pracovníků)
         	- [2.1.4 Základní informace o zbývajících hodinách dovolené, hodinách nemocnosti](#214-základní-informace-o-zbývajících-hodinách-dovolené-hodinách-nemocnosti)
+      	-  [2.2 Produkty a produkce](#22-produkty-a-produkce)
+         	-  [2.2.1 2.2.1 Produktová hierarchie](#221-produktové-info-a-zařazení-do-hierarchie)
 ## 1. Úvod
 ### 1.1 Popis
 Cílem tohoto projektu je zanalyzovat veřejně dostupnou databázi pomocí SQL v programu SQL Server Management Studio a také provést vizualizaci dat v programu PowerBi.
@@ -156,4 +158,53 @@ CREATE OR ALTER VIEW view_employee_hours_vacation_sick_info AS (
 	LEFT JOIN [AdventureWorks2022].[Person].[Person] p
 		ON emp.BusinessEntityID = p.BusinessEntityID)
 ;
+```
+### 2.2 Produkty a produkce
+#### 2.2.1 Produktové info a zařazení do hierarchie
+
+Pro vytvoření výpisu základního produktových  informací o jednotlivých produktech včetně jejich zařazení do hierarchie společnosti bylo nutné propojit tabulky:
+
+- Product
+- ProductSubcategory
+- ProductModel
+- ProductCategory
+
+```
+CREATE OR ALTER VIEW view_product_hierarchy_basic_info AS (
+	SELECT
+		p.ProductID AS Product_ID,
+		p.Name AS Product_Name,
+		p.ProductNumber AS Product_Num,
+		p.MakeFlag,
+		p.FinishedGoodsFlag AS Finished_Goods,
+		p.Color AS Product_Color,
+		p.SafetyStockLevel AS Safety_Stock_Level,
+		p.ReorderPoint AS Reorder_Point,
+		p.StandardCost AS STD_Cost,
+		p.ListPrice AS Price,
+		p.Size,
+		p.SizeUnitMeasureCode AS Size_Unit,
+		p.Weight,
+		p.WeightUnitMeasureCode AS Weight_Unit,
+		p.DaysToManufacture AS Production_time,
+		p.ProductLine AS Product_Line,
+		p.Class AS Product_Class,
+		p.Style,
+		c.Name AS Product_Category,
+		s.Name AS Product_Subcategory,
+		m.Name AS Product_Model,
+		YEAR(p.SellStartDate) AS Sell_Start_year,
+		YEAR(p.SellEndDate) AS Sell_End_year,
+		p.DiscontinuedDate AS Discontinued_Date,
+		CASE	
+			WHEN p.SellEndDate IS NOT NULL THEN 'Not Sellable'
+			ELSE 'Sellable'
+		END AS Sellable
+	FROM [AdventureWorks2022].[Production].[Product] p
+	LEFT JOIN [AdventureWorks2022].[Production].[ProductSubcategory] s
+		ON p.ProductSubcategoryID = s.ProductSubcategoryID
+	LEFT JOIN [AdventureWorks2022].[Production].[ProductModel] m
+		ON p.ProductModelID = m.ProductModelID
+	LEFT JOIN [AdventureWorks2022].[Production].[ProductCategory] c
+		ON s.ProductCategoryID = c.ProductCategoryID)
 ```
