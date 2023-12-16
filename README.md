@@ -21,6 +21,7 @@
          	-  [2.2.2 Cenová historie produktů](#222-cenová-historie-produktů)
          	-  [2.2.3 Změna cen v čase](#223-změna-cen-v-čase)
          	-  [2.2.4 Základní informace o výrobních zakázkách](#224-základní-informace-o-výrobních-zakázkách)
+         	-  [2.2.5 Scrap a náklady plynoucí ze scrapu dle různých pohledů](#225-scrap-a-náklady-plynoucí-ze-scrapu-dle-různých-pohledů)
 
 Cenová historie produktů
 ## 1. Úvod
@@ -339,3 +340,79 @@ CREATE OR ALTER VIEW view_production_orders AS(
 			ON sp.ProductCategoryID = c.ProductCategoryID)
 ;
 ```
+#### 2.2.5 Scrap a náklady plynoucí ze scrapu dle různých pohledů
+Dva nížd uvedené scripty slouží k zjišťování scrapu v nákladů na scrap dle různých kriterí v jednotlivých letech
+
+Prvně bylo nutné se vytvořit pohled, který sesumarizuje náklady na jednotlivé výrobní zakárky.
+```
+CREATE OR ALTER VIEW view_production_orders_cost AS (
+	SELECT
+		WorkOrderID,
+		SUM(ActualCost) AS Oder_cost
+	FROM [AdventureWorks2022].[Production].[WorkOrderRouting]
+	GROUP BY WorkOrderID
+)
+;
+```
+
+Poté je tento pohled propojen s již existujícím pohledem [Základní informace o výrobních zakázkách](#224-základní-informace-o-výrobních-zakázkách) za vyuřití pomocné tabulky. Následný script zobrazuje %scrap pro jednotlivé kaategori produktu seskupený podle let. Také jsou zde uvedeny náklady na scrap.
+
+```
+WITH order_cost_table AS(
+	SELECT
+		o.Workorder_ID,
+		o.Product_ID,
+		o.Product_Name,
+		o.Subcategory_Name,
+		o.Category_Name,
+		o.Order_Qty,
+		o.Scrap_Qty,
+		o.Scrap_Reason,
+		o.Production_year,
+		c.Oder_cost
+	FROM [AdventureWorks2022].[dbo].[view_production_orders] o
+	LEFT JOIN [AdventureWorks2022].[dbo].[view_production_orders_cost] c
+		ON o.Workorder_ID = c.WorkOrderID
+)
+SELECT
+	Production_year,
+	Category_Name,
+	SUM(Scrap_Qty),
+	SUM(Order_Qty),
+	ROUND(SUM(Scrap_Qty)*1.0 / SUM(Order_Qty) * 100,2) AS Reason_scrap_,
+	SUM(Oder_cost / Order_Qty * Scrap_Qty) AS Reason_scrap_cost
+FROM order_cost_table
+GROUP BY Production_year,Category_Name
+ORDER BY Production_year ASC
+```
+
+Analogicky pro důvod scrapu.
+```
+WITH order_cost_table AS(
+	SELECT
+		o.Workorder_ID,
+		o.Product_ID,
+		o.Product_Name,
+		o.Subcategory_Name,
+		o.Category_Name,
+		o.Order_Qty,
+		o.Scrap_Qty,
+		o.Scrap_Reason,
+		o.Production_year,
+		c.Oder_cost
+	FROM [AdventureWorks2022].[dbo].[view_production_orders] o
+	LEFT JOIN [AdventureWorks2022].[dbo].[view_production_orders_cost] c
+		ON o.Workorder_ID = c.WorkOrderID
+)
+SELECT
+	Production_year,
+	Scrap_Reason,
+	SUM(Scrap_Qty),
+	SUM(Order_Qty),
+	ROUND(SUM(Scrap_Qty)*1.0 / SUM(Order_Qty) * 100,2) AS Reason_scrap,
+	SUM(Oder_cost / Order_Qty * Scrap_Qty) AS Reason_scrap_cost
+FROM order_cost_table
+GROUP BY Production_year,Scrap_Reason
+ORDER BY Production_year ASC
+```
+Lze využít pro jakýkoliv sloupec, který je uveden v pomocné tabulce (produkt, subkategorie etc.)
