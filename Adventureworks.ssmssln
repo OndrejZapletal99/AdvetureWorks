@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28307.421
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pohledy", "Pohledy", "{79BFBD77-D82E-48FD-B4E0-70A6A7FFFF58}"
 	ProjectSection(SolutionItems) = preProject
+		Select_cost_scrap_by_category.sql = Select_cost_scrap_by_category.sql
+		Select_cost_scrap_by_reason.sql = Select_cost_scrap_by_reason.sql
 		Select_price_delta_1_year.sql = Select_price_delta_1_year.sql
 		Select_price_delta_2_years.sql = Select_price_delta_2_years.sql
 		view_employee_hire_birth_date.sql = view_employee_hire_birth_date.sql
@@ -13,6 +15,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pohledy", "Pohledy", "{79BF
 		view_person_contact_basic_info.sql = view_person_contact_basic_info.sql
 		view_product_hierarchy_basic_info.sql = view_product_hierarchy_basic_info.sql
 		view_product_price_history.sql = view_product_price_history.sql
+		view_production_orders_cost.sql = view_production_orders_cost.sql
+		view_production_ordes.sql = view_production_ordes.sql
 	EndProjectSection
 EndProject
 Global
@@ -20,7 +24,7 @@ Global
 		Default|Default = Default|Default
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{F36A1DF8-742B-416A-9B1F-A519EE212389}.Default|Default.ActiveCfg = Default
+		{261B30E2-E6C3-42F1-A93D-FF9DD109C7AC}.Default|Default.ActiveCfg = Default
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
