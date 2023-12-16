@@ -20,6 +20,7 @@
          	-  [2.2.1 Produktová hierarchie](#221-produktové-info-a-zařazení-do-hierarchie)
          	-  [2.2.2 Cenová historie produktů](#222-cenová-historie-produktů)
          	-  [2.2.3 Změna cen v čase](#223-změna-cen-v-čase)
+         	-  [2.2.4 Základní informace o výrobních zakázkách](#224-základní-informace-o-výrobních-zakázkách)
 
 Cenová historie produktů
 ## 1. Úvod
@@ -284,5 +285,57 @@ FROM product_price_dev_2_year
 WHERE 1=1
 	AND Previous_fiscal_year_2 IS NOT NULL
 ORDER BY Fiscal_year DESC
+;
+```
+
+### 2.2.4 Základní informace o výrobních zakázkách
+Pohled obsahuje informace o výrobních zakázkách:
+
+- Číslo zakázky
+- Číslo produktu
+- Název produktu
+- Kategorie, sbukategorie produktu
+- Důvod scrapu,
+- Počet vyrobených kusů vyrobených
+- Počet vyrobených kusů uskladněných
+- Počet vyrobených kusů pro scrap
+- Časová zpoždění nebo předstih zakázky
+- Info o tom jestli je zakázka zpožděná
+- Rok produkce
+Pro vytvoření pohledu bylo nutné propojit tyto tabulky:
+
+- WorkOrder
+- ScrapReason
+- Product
+- ProductSubcategory
+- ProductCategory
+```
+CREATE OR ALTER VIEW view_production_orders AS(
+	SELECT
+		wo.WorkOrderID AS Workorder_ID,
+		wo.ProductID as Product_ID,
+		p.Name AS Product_Name,
+		sp.Name AS Subcategory_Name,
+		c.Name AS Category_Name,
+		wo.OrderQty AS Order_Qty,
+		wo.StockedQty AS Stocked_Qty,
+		wo.ScrappedQty AS Scrap_Qty,
+		sc.Name AS Scrap_Reason,
+		DAY(wo.DueDate) - DAY(wo.EndDate) AS Day_diff,
+		CASE 
+			WHEN (wo.DueDate) - DAY(wo.EndDate) <0 THEN 'Delyed'
+			WHEN (wo.DueDate) - DAY(wo.EndDate) = 0 THEN 'JIT'
+			ELSE 'Early'
+		END AS Late_Status,
+		YEAR(wo.EndDate) AS Production_year
+	FROM [AdventureWorks2022].[Production].[WorkOrder] wo
+		LEFT JOIN [AdventureWorks2022].[Production].[ScrapReason] sc
+			ON wo.ScrapReasonID = sc.ScrapReasonID
+		LEFT JOIN [AdventureWorks2022].[Production].[Product] p
+			ON wo.ProductId = p.ProductID
+		LEFT JOIN [AdventureWorks2022].[Production].[ProductSubcategory] sp
+			ON p.ProductSubcategoryID = sp.ProductSubcategoryID
+		LEFT JOIN [AdventureWorks2022].[Production].[ProductCategory] c
+			ON sp.ProductCategoryID = c.ProductCategoryID)
 ;
 ```
