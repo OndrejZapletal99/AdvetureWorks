@@ -22,7 +22,10 @@
          	-  [2.2.3 Změna cen v čase](#223-změna-cen-v-čase)
          	-  [2.2.4 Základní informace o výrobních zakázkách](#224-základní-informace-o-výrobních-zakázkách)
          	-  [2.2.5 Scrap a náklady plynoucí ze scrapu dle různých pohledů](#225-scrap-a-náklady-plynoucí-ze-scrapu-dle-různých-pohledů)
-
+        - [2.3 Nákup](#23-nákup)
+            - [2.3.1 Sloučení nákupních informací](#231-sloučení-nákupních-informací)
+            - [2.3.2 Průměrný leadtime podle dodavatele a jeho vývoj v letech](#232-průměrný-leadtime-podle-dodavatele-a-jeho-vývoj-v-letech)
+            - [2.3.3 Náklady na jednotlivé typy dopravy a jejich podíl v celkových nákladech](#233-náklady-na-jednotlivé-typy-dopravy-a-jejich-podíl-v-celkových-nákladech)
 Cenová historie produktů
 ## 1. Úvod
 ### 1.1 Popis
@@ -473,4 +476,31 @@ CREATE OR ALTER VIEW view_purchasing_orders_all_data AS (
 	LEFT JOIN [AdventureWorks2022].[Person].[Person] emp
 		ON poh.EmployeeID = emp.BusinessEntityID )
 ;
+```
+#### 2.3.2 Průměrný leadtime podle dodavatele a jeho vývoj v letech
+Tento select scrip zobrazí průměrý leadtime každého dodavatele v jednotlivých letech.
+Analogicky lze změnit na produkt, produktovou kategoii, subkategorii, způsob dodání atd.
+
+```
+SELECT
+	due_year AS Fiscal_year,
+	VendorID,
+	Vendor_Name,
+	AVG(Order_Due_day_diff) AS AVG_lead_time
+FROM  [AdventureWorks2022].[dbo].[view_purchasing_orders_all_data]
+GROUP BY VendorID,Vendor_Name,due_year
+ORDER BY VendorID,Vendor_Name,due_year;
+```
+#### 2.3.3 Náklady na jednotlivé typy dopravy a jejich podíl v celkových nákladech
+Tento select scrip zobrazí sumu nákladů na jednotlivé typy doprav v jednotlivých letech a následně vypočítá jejich % podíl k celkovým nákladům
+```
+SELECT
+	due_year AS Fiscal_year,
+	Ship_method_Name,
+	ROUND(SUM(Freight),2) AS Total_freight_cost,
+	ROUND(SUM(TotalDue),2) AS Total_order_cost,
+	ROUND((SUM(Freight) / SUM(TotalDue) * 100),2) AS Share_of_freight
+FROM [AdventureWorks2022].[dbo].[view_purchasing_orders_all_data]
+GROUP BY Ship_method_Name, due_year
+ORDER BY Ship_method_Name, due_year
 ```
