@@ -8,7 +8,7 @@ CREATE OR ALTER VIEW view_purchasing_orders_all_data AS (
 		poh.OrderDate,
 		poh.ShipDate,
 		pod.DueDate,
-		DAY(pod.DueDate)-DAY(poh.OrderDate) AS Order_Due_day_diff,
+		DAY((pod.DueDate)-(OrderDate)) AS Order_Due_day_diff,
 		YEAR(pod.DueDate) AS due_Year,
 		pod.OrderQty,
 		pod.ReceivedQty,
