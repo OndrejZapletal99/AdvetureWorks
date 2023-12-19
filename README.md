@@ -1,7 +1,6 @@
 # Adveture Works projekt
 
 - *SQL*
-- *PoweBI*
 - *DISCORD*: "ondrej_zapletal"
 ---
 
@@ -29,9 +28,11 @@
 			)
 		- [2.4 Prodej](#24-prodej)
   		  - [2.4.1 Sloučení prdejních informací](#241-sloučení-prodejních-informací)
+  		  - [2.4.2 Prodeje v jednotlivých oblastech a jejich časový vývoj](#242-prodeje-v-jednotlivých-oblastech-a-jejich-časový-vývoj)
+  		  - [2.4.3 Top 5 produktů v každém roce podle prodejů](#243-top-5-produktů-v-každém-roce-podle-prodejů)
 ## 1. Úvod
 ### 1.1 Popis
-Cílem tohoto projektu je zanalyzovat veřejně dostupnou databázi pomocí SQL v programu SQL Server Management Studio a také provést vizualizaci dat v programu PowerBi.
+Cílem tohoto projektu je zanalyzovat veřejně dostupnou databázi pomocí SQL v programu SQL Server Management Studio.
 ### 1.2 Zdroj dat 
 Data pro tento projekt jsou veřejně dustupná na [**webu**](https://learn.microsoft.com/en-us/sql/samples/adventureworks-install-configure?view=sql-server-ver16&tabs=ssms). Pro stažení a instalaci backupu je vhodné zhlédnout [**video**](https://www.youtube.com/watch?v=bAlQfpjPOEA).
 Jedná se o veřejně dostupnou databázi, která slouží k procvičování a trenování v SQL a také k tvorbě vizualizace v PowerBi. Databáze obsahuje data z oblasti podnikového řizení, přesněji z oblasti lidských zdrojů, výroby, prodejů a nákupu.
@@ -600,7 +601,57 @@ SELECT
 	(SUM(TotalDue/AverageRate)-LAG(SUM(TotalDue/AverageRate)) OVER (PARTITION BY Territory_group ORDER BY Sales_year)) / LAG(SUM(TotalDue/AverageRate)) OVER (PARTITION BY Territory_group ORDER BY Sales_year) * 100 AS Percent_change
 FROM [AdventureWorks2022].[dbo].[view_sales_all_data_info]
 GROUP BY Sales_year, Territory_group
-ORDER BY Territory_group
+ORDER BY Territory_group,Sales_year
 ```
 
->>**Tento script lze jednodušše obměnit na jednotlivé 'Territory_group' nebo 'CustomerID'**
+>>**Tento script lze jednodušše obměnit na jednotlivé 'Territory_group', 'CustomerID' nebo také jen na prodeje za daný rok**
+
+#### 2.4.2 Podíl přijmů z dopravy na celkových prodejích 
+
+Následující select scrip zobrazuje přijmy z dopravy a podílů těchto příijmů na celkových prodejích.
+
+```
+SELECT
+	Sales_year,
+	Ship_Method,
+	ROUND(SUM(TotalDue/AverageRate),2) AS Sales_total,
+	ROUND(SUM(Freight/AverageRate),2) AS Freight_total,
+	ROUND(SUM(Freight/AverageRate),2) / ROUND(SUM(TotalDue/AverageRate),2) * 100 AS Share_Of_freight,
+	LAG(ROUND(SUM(Freight/AverageRate),2) / ROUND(SUM(TotalDue/AverageRate),2) * 100) OVER (PARTITION BY Ship_Method ORDER BY Sales_year) AS Previous_share,
+	(ROUND(SUM(Freight/AverageRate),2) / ROUND(SUM(TotalDue/AverageRate),2) * 100 - LAG(ROUND(SUM(Freight/AverageRate),2) / ROUND(SUM(TotalDue/AverageRate),2) * 100) OVER (PARTITION BY Ship_Method ORDER BY Sales_year)) / (LAG(ROUND(SUM(Freight/AverageRate),2) / ROUND(SUM(TotalDue/AverageRate),2) * 100) OVER (PARTITION BY Ship_Method ORDER BY Sales_year)) * 100 AS Year_change
+FROM [AdventureWorks2022].[dbo].[view_sales_all_data_info]
+GROUP BY Sales_year, Ship_Method
+ORDER BY Ship_Method, Sales_year
+```
+
+#### 2.4.3 Top 5 produktů v každém roce podle prodejů
+
+Následující select scrip zobrazuje TOP 5 produktů v každém roce podle prodejů.
+
+```
+
+WITH RankedSales AS (
+    SELECT
+        vs.Sales_year,
+        pod.ProductID,
+        ROUND(SUM(vs.TotalDue / vs.AverageRate),0) AS Total_sales,
+        RANK() OVER (PARTITION BY vs.Sales_year ORDER BY SUM(vs.TotalDue / vs.AverageRate) DESC) AS SalesRank
+    FROM
+        [AdventureWorks2022].[dbo].[view_sales_all_data_info] vs
+    LEFT JOIN
+        [AdventureWorks2022].[Sales].[SalesOrderDetail] pod 
+	ON vs.SalesOrderID = pod.SalesOrderID
+    GROUP BY vs.Sales_year, pod.ProductID
+)
+
+SELECT
+    Sales_year,
+    ProductID,
+    Total_sales
+FROM
+    RankedSales
+WHERE
+    SalesRank <= 5
+ORDER BY
+    Sales_year, Total_sales DESC;
+```
