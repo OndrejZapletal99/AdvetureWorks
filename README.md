@@ -8,7 +8,7 @@
 - # Obsah
 	- [1. Zdroj dat](#1-zdroj-dat)
     	- [1.1 Popis](#11-popis)
-    	- [1.2 Popis](#12-zdroj-dat)
+    	- [1.2 Zdroj dat](#12-zdroj-dat)
   	- [2. SQL databáze](#2-sql-databáze)
     	- [2.1 Lidské zdroje](#21-lidské-zdroje)
         	- [2.1.1 Základní kontaktní informace o zaměstnacích](#211-základní-kontaktní-informace-o-zaměstnacích)
