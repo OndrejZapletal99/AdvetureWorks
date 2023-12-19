@@ -27,6 +27,8 @@
             - [2.3.2 Průměrný leadtime podle dodavatele a jeho vývoj v letech](#232-průměrný-leadtime-podle-dodavatele-a-jeho-vývoj-v-letech)
             - [2.3.4 Rozdíl mezi dodaným a objednamým množstvím. Počet odmítnuhé množství zboží](#234-rozdíl-mezi-dodaným-a-objednamým-množstvím-počet-odmítnuhé-množství-zboží
 			)
+		- [2.4 Prodej](#24-prodej)
+  		  - [2.4.1 Sloučení prdejních informací](#241-sloučení-prodejních-informací)
 ## 1. Úvod
 ### 1.1 Popis
 Cílem tohoto projektu je zanalyzovat veřejně dostupnou databázi pomocí SQL v programu SQL Server Management Studio a také provést vizualizaci dat v programu PowerBi.
@@ -245,7 +247,7 @@ CREATE OR ALTER VIEW view_product_price_history AS (
 ```
 #### 2.2.3 Změna cen v čase
 Z pohledu pohledu o cenové historii [2.2.2 Cenová historie produktů](#222-cenová-historie-produktů) byly vytvořeny dva seelct příkazy pro zjištění změny ceny meziročně a také změny ceny během dou let.
-Tyto příkazy lze jednoduše změnit v případě, že by někdo požadoval zjsitit změny pro produktové kategorie nebo subkategorie
+>>**Tento script lze jednoduše změnit v případě, že by někdo požadoval zjsitit změny pro produktové kategorie nebo subkategorie**
 
 ```
 WITH product_price_dev_1_year AS (
@@ -358,7 +360,7 @@ CREATE OR ALTER VIEW view_production_orders_cost AS (
 ;
 ```
 
-Poté je tento pohled propojen s již existujícím pohledem [Základní informace o výrobních zakázkách](#224-základní-informace-o-výrobních-zakázkách) za vyuřití pomocné tabulky. Následný script zobrazuje %scrap pro jednotlivé kaategori produktu seskupený podle let. Také jsou zde uvedeny náklady na scrap.
+Poté je tento pohled propojen s již existujícím pohledem [Základní informace o výrobních zakázkách](#224-základní-informace-o-výrobních-zakázkách) za vyuřití pomocné tabulky. Následný script zobrazuje %scrap pro jednotlivé kategori produktu seskupený podle let. Také jsou zde uvedeny náklady na scrap.
 
 ```
 WITH order_cost_table AS(
@@ -418,7 +420,7 @@ FROM order_cost_table
 GROUP BY Production_year,Scrap_Reason
 ORDER BY Production_year ASC
 ```
-Lze využít pro jakýkoliv sloupec, který je uveden v pomocné tabulce (produkt, subkategorie etc.)
+>>**Lze využít pro jakýkoliv sloupec, který je uveden v pomocné tabulce (produkt, subkategorie etc.)**
 ### 2.3 Nákup
 #### 2.3.1 Sloučení nákupních informací
 V následujícím pohledu jsou sloučeny všechny nákupní informace z tabulek a pohledů:
@@ -479,7 +481,7 @@ CREATE OR ALTER VIEW view_purchasing_orders_all_data AS (
 ```
 #### 2.3.2 Průměrný leadtime podle dodavatele a jeho vývoj v letech
 Tento select scrip zobrazí průměrý leadtime každého dodavatele v jednotlivých letech.
-Analogicky lze změnit na produkt, produktovou kategoii, subkategorii, způsob dodání atd.
+>>**Analogicky lze změnit na produkt, produktovou kategoii, subkategorii, způsob dodání atd.**
 
 ```
 SELECT
@@ -506,7 +508,7 @@ ORDER BY Ship_method_Name, due_year
 ```
 #### 2.3.4 Rozdíl mezi dodaným a objednamým množstvím. Počet odmítnuhé množství zboží.
 Tento select scrip zobrazí sumu rozdílů mezi objedaným nnožstvím a dodaným množstvím podle jednotlivých dodavatelů a sledovaných let. Dále je zde poznámka jestli došlo k navýšení, snížení tohoto rozdílu oproti minulému roku. Dále je zde uveden průmer tohoto rozdílu.
-Ten samý výpočet je použit i pro odmítnuté množství zboží.
+>>**Ten samý výpočet je použit i pro odmítnuté množství zboží.**
 
 ```
 SELECT
@@ -537,3 +539,68 @@ WHERE 1=1
 GROUP BY VendorID,Vendor_Name,due_year
 ORDER BY VendorID,Vendor_Name,due_year;
 ```
+
+### 2.4 Prodej
+#### 2.4.1 Sloučení prodejních informací
+V následujícím pohledu jsou sloučeny všechny informace o prodejích. Zároveň bylo nutné získat měny k jednotlivým prodejům, protože ne vždy byly data vyplněny.
+- SalesOrderHeader
+- SalesTerritory
+- CountryRegionCurrency
+- ShipMethod
+- CurrencyRate
+
+Dále bylo nutné odfiltrovat měny u států, které měly více jak jednu měnu. Vždy byla vynechána ta jiná měna, než se nyní používá v daném státě.
+```
+CREATE OR ALTER VIEW view_sales_all_data_info AS (
+SELECT
+	soh.SalesOrderID,
+	YEAR(soh.DueDate) as Sales_year,
+	soh.CustomerID,
+	soh.SalesPersonID,
+	soh.TerritoryID,
+	st.Name AS Territory,
+	st.[Group] AS Territory_group,
+	st.CountryRegionCode,
+	cc.CurrencyCode,
+	soh.ShipMethodID,
+	sm.Name AS Ship_Method,
+	soh.SubTotal,
+	soh.TaxAmt,
+	soh.Freight,
+	soh.TotalDue,
+	cr.AverageRate
+FROM [AdventureWorks2022].[Sales].[SalesOrderHeader] soh
+LEFT JOIN [AdventureWorks2022].[Sales].[SalesTerritory] st
+	ON soh.TerritoryID = st.TerritoryID
+INNER JOIN [AdventureWorks2022].[Sales].[CountryRegionCurrency] cc
+	ON st.CountryRegionCode = cc.CountryRegionCode
+LEFT JOIN [AdventureWorks2022].[Purchasing].[ShipMethod] sm
+	ON soh.ShipMethodID = sm.ShipMethodID
+LEFT JOIN [AdventureWorks2022].[Sales].[CurrencyRate] cr
+	ON  cc.CurrencyCode = cr.ToCurrencyCode
+	AND soh.DueDate = cr.CurrencyRateDate
+WHERE cc.CurrencyCode NOT IN ('DEM', 'ESP', 'FIM', 'FRF', 'GRD', 'IEP', 'ITL', 'NLG', 'PTE'))
+;
+```
+#### 2.4.2 Prodeje v jednotlivých oblastech a jejich časový vývoj
+Následující select scrip zobrazuje jednotlivé oblasti a jejich prodeje včetně poznámky o meziroční změně jak slovně, tak číselně.
+
+
+```
+SELECT
+	Sales_year,
+	Territory_group,
+	ROUND(SUM(TotalDue/AverageRate),2) AS Sales_total_USD,
+	LAG(ROUND(SUM(TotalDue/AverageRate),2)) OVER (PARTITION BY Territory_group ORDER BY Sales_year) AS Sales_total_USD_previous,
+	CASE
+		WHEN ROUND(SUM(TotalDue/AverageRate),2) / LAG(ROUND(SUM(TotalDue/AverageRate),2)) OVER (PARTITION BY Territory_group ORDER BY Sales_year) > 1 THEN 'Increase'
+		WHEN ROUND(SUM(TotalDue/AverageRate),2) / LAG(ROUND(SUM(TotalDue/AverageRate),2)) OVER (PARTITION BY Territory_group ORDER BY Sales_year) < 1 THEN 'Decrease'
+		ELSE 'No change'
+	END AS Sales_change_one_year,
+	(SUM(TotalDue/AverageRate)-LAG(SUM(TotalDue/AverageRate)) OVER (PARTITION BY Territory_group ORDER BY Sales_year)) / LAG(SUM(TotalDue/AverageRate)) OVER (PARTITION BY Territory_group ORDER BY Sales_year) * 100 AS Percent_change
+FROM [AdventureWorks2022].[dbo].[view_sales_all_data_info]
+GROUP BY Sales_year, Territory_group
+ORDER BY Territory_group
+```
+
+>>**Tento script lze jednodušše obměnit na jednotlivé 'Territory_group' nebo 'CustomerID'**

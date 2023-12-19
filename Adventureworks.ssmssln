@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pohledy", "Pohledy", "{79BF
 		Select_price_delta_1_year.sql = Select_price_delta_1_year.sql
 		Select_price_delta_2_years.sql = Select_price_delta_2_years.sql
 		Select_qty_diff.sql = Select_qty_diff.sql
+		Select_sales_by_territory.sql = Select_sales_by_territory.sql
 		Select_share_of_freight_by_ship_method.sql = Select_share_of_freight_by_ship_method.sql
 		view_employee_hire_birth_date.sql = view_employee_hire_birth_date.sql
 		view_employee_hours_vacation_sick_info.sql = view_employee_hours_vacation_sick_info.sql
@@ -21,6 +22,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pohledy", "Pohledy", "{79BF
 		view_production_orders_cost.sql = view_production_orders_cost.sql
 		view_production_ordes.sql = view_production_ordes.sql
 		view_purchasing_orders_all_data.sql = view_purchasing_orders_all_data.sql
+		view_sales_all_data_info.sql = view_sales_all_data_info.sql
 	EndProjectSection
 EndProject
 Global
@@ -28,7 +30,7 @@ Global
 		Default|Default = Default|Default
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{76429FF7-1E9E-4E24-B453-7B91604C6DEC}.Default|Default.ActiveCfg = Default
+		{4B86F774-6DEE-45BF-8359-45684F4A11CF}.Default|Default.ActiveCfg = Default
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
